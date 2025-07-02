@@ -30,90 +30,110 @@
 						</el-form-item>
 						<!-- 添加字段部分 -->
 						<div class="edit-title"><b>添加表单字段</b></div>
-						<el-form-item label="字段类型" prop="newField.type" :label-width="formLabelWidth">
-							<el-select v-model="form.newField.type" placeholder="请选择">
-							<el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value"/>
-							</el-select>
-						</el-form-item>
-						<el-form-item label="字段标签" prop="newField.label" :label-width="formLabelWidth">
-							<el-input v-model="form.newField.label" autocomplete="off" placeholder="请输入字段标签"></el-input>
-						</el-form-item>
-						<div v-if="form.newField.type === 'radio' || form.newField.type === 'checkbox'" >
-							<el-form-item label="选项设置" prop="options" :label-width="formLabelWidth">
-							<div v-for="(option, index) in form.newField.options" :key="index" class="option-item">
-								<el-input
-								v-model="form.newField.options[index]"
-								type="text"
-								placeholder="选项文本"
-								class="option-input"
-								/>
-								<el-button @click="removeOption(index)" type="danger">删除</el-button>
-							</div>
-							<el-button @click="addOption(index)">添加选项</el-button>
-							</el-form-item>
-							<div v-if="form.newField.type === 'radio'">
-							<el-form-item label="是否联动" :label-width="formLabelWidth">
-								<el-checkbox v-model="form.newField.hasLinkedField">启用</el-checkbox>
-							</el-form-item>
-							<div v-if="form.newField.hasLinkedField">
-								<el-form-item label="联动字段标签" prop="newField.linkedField.label" :label-width="formLabelWidth">
-								<el-input v-model="form.newField.linkedField.label" autocomplete="off" placeholder="请输入联动字段标签"></el-input>
+							<el-form size="small" :model="form" :rules="formRules" ref="form">
+								<el-form-item label="字段类型" prop="newField.type" :label-width="formLabelWidth">
+									<el-select v-model="form.newField.type" placeholder="请选择">
+									<el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value"/>
+									</el-select>
 								</el-form-item>
-								<el-form-item label="关联选项" prop="newField.linkedField.optionIndex" :label-width="formLabelWidth">
-								<el-select v-model="form.newField.linkedField.optionIndex" placeholder="请选择">
-									<el-option v-for="(item, index) in form.newField.options" :key="index" :label="item" :value="index"/>
-								</el-select>
+								<el-form-item label="字段标签" prop="newField.label" :label-width="formLabelWidth">
+									<el-input v-model="form.newField.label" autocomplete="off" placeholder="请输入字段标签"></el-input>
 								</el-form-item>
-							</div>
-							</div>
-						</div>
-						<el-button @click="addField" class="add-field-btn">添加字段</el-button>
-						<!-- <el-form-item label="字段类型" prop="data_excel" :label-width="formLabelWidth">
-							<el-input v-model="form.data_excel" autocomplete="off"></el-input>
-							</el-form-item> -->
-						<div >
-						</div>
+								<div v-if="form.newField.type === 'radio' || form.newField.type === 'checkbox'" >
+									<el-form-item label="选项设置" prop="options" :label-width="formLabelWidth">
+									<div v-for="(option, index) in form.newField.options" :key="index">
+										<div class="option-item">
+											<el-input
+												v-model="option.detail"
+												type="text"
+												placeholder="选项文本"
+												class="option-input"
+											/>
+											<div v-if="form.newField.type === 'radio'"><el-checkbox v-model="option.hasLinkedField" style="margin-right: 5px;">联动</el-checkbox></div>
+											<el-button @click="removeOption(index)" type="danger">删除</el-button>
+										</div>
+										<div v-if="option.hasLinkedField" style="display: block; margin-top: 10px;">
+											<el-form-item label="联动字段类型" :label-width="'100px'" class="link-field">
+												<el-select v-model="option.linkedField.type" placeholder="请选择">
+												<el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value"/>
+												</el-select>
+											</el-form-item>
+											<el-form-item label="联动字段标签" :label-width="'100px'" class="link-field">
+												<el-input v-model="option.linkedField.label" autocomplete="off" placeholder="请输入联动字段标签"></el-input>
+											</el-form-item>
+											<!-- 联动字段类型为单选 -->
+											<div v-if="option.linkedField.type === 'radio' || option.linkedField.type === 'checkbox'">
+												<el-form-item label="选项设置" :label-width="'100px'" class="link-field">
+												<div v-for="(op, i) in option.linkedField.options" :key="i" class="option-item">
+													<el-input
+													type="text"
+													v-model="option.linkedField.options[i]"
+													placeholder="选项文本"
+													class="option-input"
+													/>
+													<div style="line-height: 32px;"><el-icon @click="removeLinkOption(index, i)"><Delete /></el-icon></div>
+												</div>
+												<el-button @click="addLinkOption(index)">添加联动选项</el-button>
+												</el-form-item>
+											</div>
+										</div>
+									</div>
+									<el-button @click="addOption(index)">添加选项</el-button>
+									</el-form-item>
+								</div>
+								<el-button @click="addField" class="add-field-btn">添加字段</el-button>
+							</el-form>
 					</el-form>
 				</div>
 				<!-- 表单预览 -->
 				<div class="preview-form">
-					<div class="preview-title"><b>字段表单预览</b></div>
+					<div class="preview-title"><b>表单预览</b></div>
 					<el-form size="small" :model="form" ref="form">
-					<el-form-item v-for="field in formFields" :key="field.id" :label="field.label" :label-width="'formLabelWidth'">
-						<!-- 文本框类型 -->
-						<el-input v-if="field.type === 'text'" v-model="formValues[field.id]" :placeholder="`请输入${field.label}`"></el-input>
-						<!-- 单选框类型 -->
-						<div v-if="field.type === 'radio'">
-						<el-radio-group v-for="(option, optIndex) in field.options" v-model="formValues[field.id]">
-							<el-radio :value="option" @change="handleRadioChange(field, optIndex)" style="margin-right: 20px;">{{ option }}</el-radio>
-						</el-radio-group>
-						</div>
-						<!-- 联动字段 -->
-						<div
-						v-if="
-							field.hasLinkedField &&
-							field.linkedField.optionIndex === selectedRadioOptions[field.id]
-						"
-						>
-						<el-form-item :label="field.linkedField.label" style="margin-left: -30px;">
-							<el-input
-							:id="'linked-field-' + index"
-							v-model="formValues[field.linkedField.id]"
-							type="text"
-							:placeholder="'请输入' + field.linkedField.label"
-							/>
+						<el-form-item v-for="field in formFields" :key="field.id" :label="field.label" :label-width="formLabelWidth">
+							<!-- 文本框类型 -->
+							<el-input v-if="field.type === 'text'" :placeholder="`请输入${field.label}`"></el-input>
+							<!-- 单选框类型 -->
+							<div v-if="field.type === 'radio'">
+								<el-radio-group v-for="(option, optIndex) in field.options" v-model="selectedRadioOptions[field.id]">
+									<el-radio :value="option.id" @change="handleRadioChange(field, option)" style="margin-right: 20px;">{{ option.detail }}</el-radio>
+								</el-radio-group>
+								<!-- 联动字段 -->
+								<div v-for="(option, optIndex) in field.options">
+									<div v-if="option.id === selectedRadioOptions[field.id] && option.hasLinkedField">
+										<el-form-item :label="option.linkedField.label" :label-width="'30px'">
+											<!-- 联动类型为文本框 -->
+											<div v-if="option.linkedField.type==='text'">
+											<el-input
+												type="text"
+												:placeholder="'请输入' + option.linkedField.label"
+											/>
+											</div>
+											<!-- 联动类型为单选 -->
+											<div v-if="option.linkedField.type==='radio'">
+											<el-radio-group v-for="(item, i) in option.linkedField.options">
+												<el-radio :value="i" style="margin-right: 15px;">{{ item }}</el-radio>
+											</el-radio-group>
+											</div>
+											<!-- 联动类型为多选 -->
+											<div v-if="option.linkedField.type==='checkbox'">
+											<el-checkbox-group v-for="(item, i) in option.linkedField.options">
+												<el-checkbox :value="i">{{ item }}</el-checkbox>
+											</el-checkbox-group>
+											</div>
+										</el-form-item>
+									</div>
+								</div>
+							</div>
+							<!-- 多选框类型 -->
+							<div v-if="field.type === 'checkbox'">
+								<el-checkbox-group v-for="(option, optIndex) in field.options" v-model="formValues[field.id]">
+									<el-checkbox :value="optIndex">{{ option.detail }}</el-checkbox>
+								</el-checkbox-group>
+							</div>
 						</el-form-item>
-						</div>
-						<!-- 多选框类型 -->
-						<div v-if="field.type === 'checkbox'">
-						<el-checkbox-group v-for="(option, optIndex) in field.options" v-model="formValues[field.id]">
-							<el-checkbox :value="option">{{ option }}</el-checkbox>
-						</el-checkbox-group>
-						</div>
-					</el-form-item>
 					</el-form>
 				</div>
-				</div>
+			</div>
 			<!--提交-->
 			<div class="common-button-wrapper">
 				<el-button size="small" type="info" @click="cancelFunc">取消</el-button>
@@ -141,13 +161,30 @@
 					newField: {
 						type: "text",
 						label: "",
-						options: ["选项1", "选项2"],
-						hasLinkedField: false,
-						linkedField: {
-						id: "",
-						label: "",
-						optionIndex: 0
+						options: [
+						{
+							detail: "选项1",
+							hasLinkedField: false,
+							id: "",
+							linkedField: {
+							id: "",
+							label: "",
+							type: "text",
+							options: ["选项1", "选项2"]
+							}
 						},
+						{
+							detail: "选项2",
+							hasLinkedField: false,
+							id: "",
+							linkedField: {
+							id: "",
+							label: "",
+							type: "text",
+							options: ["选项1", "选项2"]
+							}
+						}
+						],
 						id: ""
 					}
 				},
@@ -209,7 +246,7 @@
 				// 单选框选中状态
 				selectedRadioOptions: {},
 				/*左边长度*/
-				formLabelWidth: '100px',
+				formLabelWidth: '80px',
 			};
 		},
 		provide: function() {
@@ -225,58 +262,42 @@
 				let params = self.form;
 				self.$refs.form.validate((valid) => {
 				if (valid) {
-					// self.loading = true;
-					console.log(params);
-					console.log(params.newField);
 					if (!params.newField.label) {
-						// alert("请输入字段标签");
-						ElMessage({
-							message: '请输入字段标签',
-							type: 'error'
-						});
-						return;
+					ElMessage({
+						message: '请输入字段标签',
+						type: 'error'
+					});
+					return;
 					}
 					if (
 					(params.newField.type === "radio" || params.newField.type === "checkbox") &&
 					params.newField.options.length === 0
 					) {
-						ElMessage({
-							message: '单选/多选类型至少需要一个选项',
-							type: 'warning'
-						});
-						return;
+					ElMessage({
+						message: '单选/多选类型至少需要一个选项',
+						type: 'warning'
+					});
+					return;
 					}
-					// 生成唯一ID
-					const fieldId = "field_" + uuid();
 
+					// 设置字段ID
+					const fieldId = "field_" + uuid();
+					this.form.newField.id = fieldId;
+					// 设置选项ID
+					if (this.form.newField.type === "radio" || this.form.newField.type === "checkbox") {
+					for (let item of this.form.newField.options) {
+						item.id = "" + uuid();
+					}
+					}
 					// 复制新字段数据
 					const fieldData = JSON.parse(JSON.stringify(this.form.newField));
-					fieldData.id = fieldId;
-
-					// 处理联动字段
-					if (fieldData.type === "radio" && fieldData.hasLinkedField) {
-						fieldData.linkedField.id = "linked_" + uuid();
-					}
-
 					// 添加到表单字段
+					console.log('新表单字段', fieldData);
 					this.formFields.push(fieldData);
-
-					// 初始化表单值
-					if (fieldData.type === "checkbox") {
-						this.formValues[fieldId] = [];
-					} else {
-						this.formValues[fieldId] = "";
-					}
-
-					// 如果有联动字段，也初始化
-					if (fieldData.type === "radio" && fieldData.hasLinkedField) {
-						this.formValues[fieldData.linkedField.id] = "";
-					}
 
 					// 重置新字段
 					this.resetNewField();
-					console.log('formValues', this.formValues);
-					console.log('formFields', this.formFields);
+
 				} else {
 					// 验证不通过，Element 会自动显示错误提示
 					console.log('验证不通过');
@@ -288,25 +309,58 @@
 			resetNewField () {
 				this.form.newField.type = "text";
 				this.form.newField.label = "";
-				this.form.newField.options = ["选项1", "选项2"];
-				this.form.newField.hasLinkedField = false;
-				this.form.newField.linkedField = {
+				this.form.newField.id = "";
+				this.form.newField.options = [
+				{
+					detail: "选项1",
+					hasLinkedField: false,
+					linkedField: {
 					id: "",
 					label: "",
-					optionIndex: 0
-				};
+					type: "text",
+					options: ["选项1", "选项2"]
+					}
+				},
+				{
+					detail: "选项2",
+					hasLinkedField: false,
+					linkedField: {
+					id: "",
+					label: "",
+					type: "text",
+					options: ["选项1", "选项2"]
+					}
+				}
+				];
 			},
 			// 添加选项
 			addOption(index) {
-				this.form.newField.options.push("新选项");
+				this.form.newField.options.push({
+					detail: "新选项",
+					hasLinkedField: false,
+					linkedField: {
+						id: "",
+						label: "",
+						type: "text",
+						options: ["选项1", "选项2"]
+					}
+				});
+			},
+			// 添加联动选项
+			addLinkOption(index) {
+				this.form.newField.options[index].linkedField.options.push("新选项");
 			},
 			// 处理单选框变更
-			handleRadioChange (field, optionIndex) {
-				this.selectedRadioOptions[field.id] = optionIndex;
+			handleRadioChange (field, option) {
+				this.selectedRadioOptions[field.id] = option.id;
 			},
 			// 移除选项
 			removeOption (index) {
 				this.form.newField.options.splice(index, 1);
+			},
+			// 移除联动字段选项
+			removeLinkOption(index, i) {
+				this.form.newField.options[index].linkedField.options.splice(i, 1)
 			},
 			/*转JSON字符串*/
 			convertJson(list) {
@@ -320,8 +374,6 @@
 			/*提交*/
 			onSubmit() {
 				let self = this;
-				// let params = self.form;
-				// let params = self.formFields;
 				let params = {
 					// id: this.form.id,
 					title: this.form.title,
@@ -384,5 +436,8 @@
 		.option-input {
 			margin-right: 5px;
 		}
+	}
+	.link-field {
+		margin-left: -30px;
 	}
 </style>
